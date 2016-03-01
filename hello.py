@@ -46,13 +46,11 @@ print(sum)
 
     tuple returned when passing parameters in the next function
 """
-"""
 def add(*args):
-    print args
+    return args
 
-add(1,2,3,4,5,6,7)
+print(add(1,2,3,4,5,6,7))
 
-"""
 """
 def add(x,y):
     return 2*x + y
@@ -151,6 +149,48 @@ print(L[2:])
 print(L[::2])
 print(L[1::2])
 
+"""
+
+loops exercises
+
+"""
+
+fiboSeq = []
+a,b = 0,1
+while (b<1000):
+    fiboSeq.append(a)
+    a,b = b, a+b
+print(fiboSeq)
+
+
+factorial = 1
+for i in range(1, 30):
+    factorial *= i
+print(factorial)
+
+primes = []
+for i in range(2,100):
+    for x in range(2,i):
+        if (i% x == 0):
+            break
+        else:
+            primes.append(i)
+print(primes)
+
+
+"""
+
+how to return multiple types from args
+
+"""
+
+
+def func3(*args, **argv):
+    print(args)
+    print(argv)
+
+func3(1,2,3,4,5, k1="1", k2="2")
+func3(1,2,3,4,5,6,7, k1="1", k2="2")
 
 
 
