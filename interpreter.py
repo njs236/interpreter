@@ -17,8 +17,13 @@ class DataChecker(metaclass=abc.ABCMeta):
     def check(self):
         print("")
 
+class TestFramework(metaclass=abc.ABCMeta):
+    def findInputChecker(self):
+        print("")
 
-class Controller(FileReader, DataChecker):
+
+
+class Controller(FileReader, DataChecker, TestFramework):
 # instancing the model and views in this way is a design decision, the views should be initialised when the program is started
 
     def __init__(self, myModel, myViews):
@@ -42,6 +47,7 @@ class Controller(FileReader, DataChecker):
 
         #testcase, see if multiple rows load. Success
 
+
     def makeCheckers(self):
         """
         I have to make a design decision whether the data belongs in controller or made solely in Model
@@ -55,20 +61,23 @@ class Controller(FileReader, DataChecker):
          Income, RegExp
 
         """
-        typeCheckerList = []
-        typeCheckerList.append(self.DataColumns[0], "RegExp", "[A-Z][0-9]{3}", )
-        typeCheckerList.append(self.DataColumns[1], "Gender")
-        typeCheckerList.append(self.DataColumns[2], "RegExp", "[0-9]{2}")
-        typeCheckerList.append(self.DataColumns[3], "RegExp", "[0-9]{3}")
-        typeCheckerList.append(self.DataColumns[4], "BMI")
-        typeCheckerList.append(self.DataColumns[5], "RegExp", "[0-9]{2,3}")
-
+        typeCheckerList = [[self.DataColumns['0'], "RegExp", "[A-Z][0-9]{3}"],
+                           [self.DataColumns['1'], "Gender"],
+                           [self.DataColumns['2'], "RegExp", "[0-9]{2}"],
+                           [self.DataColumns['3'], "RegExp", "[0-9]{3}"],
+                           [self.DataColumns['4'], "BMI"],
+                           [self.DataColumns['5'], "RegExp", "[0-9]{2,3}"]]
 
         for i in range (0, 6):
             if (typeCheckerList[i][1] == "RegExp"):
-                self.myModel.addRegExp(i, typeCheckerList[i][2], self.DataColumns[i])
+                self.myModel.addRegExp(i, typeCheckerList[i][2], typeCheckerList[i][0])
             else:
-                self.myModel.addEnum(i, typeCheckerList[i][1], self.DataColumns[i])
+                self.myModel.addEnum(i, typeCheckerList[i][1], typeCheckerList[i][0])
+
+        self.myModel.countIC()
+        for item in range (0,6):
+            print(self.myModel.findInputChecker(typeCheckerList[item][0]).__str__())
+
 
 
     def check(self):
@@ -77,13 +86,13 @@ class Controller(FileReader, DataChecker):
         #uses input checkers to determine the right data set
         #
         wrongLines = 0
-        columnNames = []
+
         for row in self.bmireader:
-            for column in range(len(columnNames)):
+            for k,v in self.DataColumns:
                 #check for input checker based on description
-                if (self.myModel.findInputChecker(columnNames[column]) != None):
-                    IC = self.myModel.findInputChecker(columnNames[column])
-                    if (IC.isValid(row[column])):
+                if (self.myModel.findInputChecker(v) != None):
+                    IC = self.myModel.findInputChecker(v)
+                    if (IC.isValid(row[k])):
                         pass
                     else:
                         wrongLines += 1
@@ -114,25 +123,34 @@ class View():
         return
 
 
-class Model(object):
+class Model(TestFramework):
 
     def __init__(self):
-        self.AllMyData = []
-        self.AllMyInputCheckers = []
+        self.allMyData = []
+        self.allMyInputCheckers = []
 
     def addRegExp(self, id, constraint, description):
         newIC = RegExp(id, constraint, description)
-        self.allMyInputCheckers += newIC
+        self.allMyInputCheckers.append(newIC)
 
     def addEnum(self, id, constraint, description):
         newIC = Enum(id, constraint, description)
-        self.allMyInputCheckers += newIC
+        self.allMyInputCheckers.append(newIC)
 
     def findInputChecker(self, desc):
         for i in self.allMyInputCheckers:
             if (i.description == desc):
                 return i
         return None
+
+    def countIC(self):
+        print(len(self.allMyInputCheckers))
+
+    def getAllMyCheckers(self):
+        return self.allMyInputCheckers
+
+
+
 
 
 
@@ -157,8 +175,10 @@ class InputChecker(object):
         self.description = description
 
     def isValid(self):
-        return
+        return True
 
+    def __str__(self):
+        return str(self.id) + " is a " + self.description + " with a " + self.constraint + " constraint"
 
 class RegExp(InputChecker):
 
@@ -166,7 +186,8 @@ class RegExp(InputChecker):
         return
 
 class Enum(InputChecker):
-
+    Gender = {"0": "Male", "1": "Female"}
+    BMI = {"0": "Normal", "1": "Overweight", "2": "Obesity", "3": "Underweight"}
     def isValid(self):
         return
 
@@ -175,3 +196,4 @@ if (__name__ == '__main__'):
     views = View()
     controller = Controller(model, views)
     controller.openFile()
+    controller.makeCheckers()
