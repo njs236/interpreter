@@ -18,12 +18,12 @@ class DataChecker(metaclass=abc.ABCMeta):
         print("")
 
 class TestFramework(metaclass=abc.ABCMeta):
-    def findInputChecker(self):
+    def findInputChecker(self, desc):
         print("")
 
 
 
-class Controller(FileReader, DataChecker, TestFramework):
+class Controller(FileReader, DataChecker):
 # instancing the model and views in this way is a design decision, the views should be initialised when the program is started
 
     def __init__(self, myModel, myViews):
@@ -174,7 +174,7 @@ class InputChecker(object):
         self.constraint = constraint
         self.description = description
 
-    def isValid(self):
+    def isValid(self, data):
         return True
 
     def __str__(self):
@@ -182,13 +182,13 @@ class InputChecker(object):
 
 class RegExp(InputChecker):
 
-    def isValid(self):
+    def isValid(self, data):
         return
 
 class Enum(InputChecker):
     Gender = {"0": "Male", "1": "Female"}
     BMI = {"0": "Normal", "1": "Overweight", "2": "Obesity", "3": "Underweight"}
-    def isValid(self):
+    def isValid(self, data):
         return
 
 if (__name__ == '__main__'):
