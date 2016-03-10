@@ -72,7 +72,7 @@ class Console(IView, cmd.Cmd):
         try:
             exec(line) in self._locals, self._globals
         except Exception, e:
-            print e.__class__, ":", e
+            print(e.__class__, ":", e)
 
 if __name__ == '__main__':
         console = Console()

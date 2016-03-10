@@ -3,24 +3,21 @@ import re
 import io
 import abc
 import csv
+import sys
+
 
 
 #The interfaces for Controller are to make it easier for me to follow the use cases and what they do
 
 class FileReader(metaclass=abc.ABCMeta):
     def openFile(self):
-        print("")
+        pass
 
 class DataChecker(metaclass=abc.ABCMeta):
     def makeCheckers(self):
         print("")
     def check(self):
         print("")
-
-class TestFramework(metaclass=abc.ABCMeta):
-    def findInputChecker(self, desc):
-        print("")
-
 
 
 class Controller(FileReader, DataChecker):
@@ -40,11 +37,11 @@ class Controller(FileReader, DataChecker):
     """
     def openFile(self):
         #testcase, if data is loaded it will print the data in lines. Success
-        csvfile = open('data.csv', newline='')
+        filename = sys.argv[1]
+        csvfile = open(filename, newline='')
         self.bmireader = csv.reader(csvfile, delimiter = ' ', quotechar= '|')
         for row in self.bmireader:
             print(', '.join(row))
-
         #testcase, see if multiple rows load. Success
 
 
@@ -74,10 +71,11 @@ class Controller(FileReader, DataChecker):
             else:
                 self.myModel.addEnum(i, typeCheckerList[i][1], typeCheckerList[i][0])
 
+        """
         self.myModel.countIC()
         for item in range (0,6):
             print(self.myModel.findInputChecker(typeCheckerList[item][0]).__str__())
-
+        """
 
 
     def check(self):
@@ -86,22 +84,44 @@ class Controller(FileReader, DataChecker):
         #uses input checkers to determine the right data set
         #
         wrongLines = 0
-
-        for row in self.bmireader:
-            for k,v in self.DataColumns:
-                #check for input checker based on description
-                if (self.myModel.findInputChecker(v) != None):
-                    IC = self.myModel.findInputChecker(v)
-                    if (IC.isValid(row[k])):
-                        pass
-                    else:
-                        wrongLines += 1
-                        break
+        filename = sys.argv[1]
+        csvfile = open(filename, newline='')
+        bmireader = csv.reader(csvfile, delimiter = ' ', quotechar= '|')
+        check = bmireader != None
+        for row in bmireader:
+            wrong = self.readLine(row)
+            if(wrong==False):
+                self.myModel.addData(ID=row[0], Gender=row[1], Age=row[2], Sales=row[3], BMI=row[4], Income=row[5])
+            elif (wrong==True):
+                wrongLines += 1
         #case of wronglines of code
         if (wrongLines > 0):
-            print("We found" + wrongLines + " of wrong data")
+            print("We found " + str(wrongLines) + " row of wrong data")
+        csvfile.close()
+        self.myModel.countData()
+        for item in self.myModel.allMyData:
+            print(item)
 
-
+    def readLine(self,line):
+        print(line)
+        headings = [self.DataColumns['0'],
+                    self.DataColumns['1'],
+                    self.DataColumns['2'],
+                    self.DataColumns['3'],
+                    self.DataColumns['4'],
+                    self.DataColumns['5'],
+                    ]
+        for item in range(0,5):
+            if self.myModel.findInputChecker(headings[item]):
+                IC = self.myModel.findInputChecker(headings[item])
+                print("line: " + line[item])
+                if (IC.isValid(line[item])):
+                    print("passed")
+                    pass
+                else:
+                    print("failed")
+                    return True
+        return False
 
 
 
@@ -123,7 +143,8 @@ class View():
         return
 
 
-class Model(TestFramework):
+
+class Model(object):
 
     def __init__(self):
         self.allMyData = []
@@ -146,17 +167,15 @@ class Model(TestFramework):
     def countIC(self):
         print(len(self.allMyInputCheckers))
 
+    def countData(self):
+        print(len(self.allMyData))
+
     def getAllMyCheckers(self):
         return self.allMyInputCheckers
 
-
-
-
-
-
     def addData(self, ID, Gender, Age, Sales, BMI, Income):
         newData = Data(ID, Gender, Age, Sales, BMI, Income)
-        self.AllMyData += newData
+        self.allMyData.append(newData)
 
 class Data(object):
     def __init__(self, ID, Gender, Age, Sales, BMI, Income):
@@ -166,6 +185,9 @@ class Data(object):
         self.sales = Sales
         self.BMI = BMI
         self.income = Income
+
+    def __str__(self):
+        return self.id + self.gender + self.age + self.sales + self.BMI + self.income
 
 class InputChecker(object):
 
@@ -183,13 +205,23 @@ class InputChecker(object):
 class RegExp(InputChecker):
 
     def isValid(self, data):
-        return
+        return re.match(self.constraint, data)
 
 class Enum(InputChecker):
-    Gender = {"0": "Male", "1": "Female"}
-    BMI = {"0": "Normal", "1": "Overweight", "2": "Obesity", "3": "Underweight"}
+    __Gender = {"0": "Male", "1": "Female"}
+    __BMI = {"0": "Normal", "1": "Overweight", "2": "Obesity", "3": "Underweight"}
     def isValid(self, data):
-        return
+        if (self.constraint == "BMI"):
+            for key in self._Enum__BMI:
+                if (data==self._Enum__BMI[key]):
+                    return True
+            return False
+
+        elif (self.constraint == "Gender"):
+            for key in self._Enum__Gender:
+                if (data==self._Enum__Gender[key]):
+                    return True
+            return False
 
 if (__name__ == '__main__'):
     model = Model()
@@ -197,3 +229,4 @@ if (__name__ == '__main__'):
     controller = Controller(model, views)
     controller.openFile()
     controller.makeCheckers()
+    controller.check()
