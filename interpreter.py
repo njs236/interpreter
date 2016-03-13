@@ -123,6 +123,12 @@ class Controller(FileReader, DataChecker):
 
 
     def check(self):
+        """
+        >>> print(self.myModel.findData('A001'))
+        A001, Male, 36, 455, Normal, 889
+        :param id:
+        :return:
+        """
         #needs bmireader data.
         #sets up a count of how many wrong lines there are
         #uses input checkers to determine the right data set
@@ -138,6 +144,7 @@ class Controller(FileReader, DataChecker):
                 wrong = self.readLine(row)
                 if(wrong==False):
                     self.myModel.addData(ID=row[0], Gender=row[1], Age=row[2], Sales=row[3], BMI=row[4], Income=row[5])
+
                 elif (wrong==True):
                     wrongLines += 1
             #case of wronglines of code
@@ -150,6 +157,7 @@ class Controller(FileReader, DataChecker):
         for item in self.myModel.allMyData:
             print(item)
             """
+
 
     def readLine(self,line):
         if (line[5] == None):
@@ -211,6 +219,12 @@ class Model(object):
                 return i
         return None
 
+    def findData(self, id):
+        for i in self.allMyData:
+            if (i.id == id):
+                return i
+        return None
+
     def countIC(self):
         print(len(self.allMyInputCheckers))
 
@@ -234,7 +248,7 @@ class Data(object):
         self.income = Income
 
     def __str__(self):
-        return self.id + self.gender + self.age + self.sales + self.BMI + self.income
+        return self.id + ", " + self.gender + ", " +  self.age + ", " + self.sales + ", " + self.BMI + ", " + self.income
 
 class InputChecker(object):
 
@@ -271,11 +285,13 @@ class Enum(InputChecker):
             return False
 
 if (__name__ == '__main__'):
+    import doctest
     model = Model()
     views = View()
     controller = Controller(model, views)
     controller.openFile()
     controller.makeCheckers()
     controller.check()
+    doctest.testmod()
     console = Console()
     console.cmdloop()
