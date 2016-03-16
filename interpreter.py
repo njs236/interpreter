@@ -5,13 +5,30 @@ import abc
 import csv
 import sys
 import cmd
-
+import unittest
 
 
 #The interfaces for Controller are to make it easier for me to follow the use cases and what they do
 
+class MainTest(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test01(self):
+        pass
+
+    def test02(self):
+        pass
+
+    def test03(self):
+        pass
+
 class FileReader(metaclass=abc.ABCMeta):
-    def openFile(self):
+    def openFile(self, filename):
         pass
 
 class MyError(Exception):
@@ -79,13 +96,10 @@ class Controller(FileReader, DataChecker):
 
 
     """
-    def openFile(self):
+    def openFile(self, filename):
         #testcase, if data is loaded it will print the data in lines. Success
-        filename = sys.argv[1]
         csvfile = open(filename, newline='')
-        bmireader = csv.reader(self.csvfile, delimiter = ' ', quotechar= '|')
-        for row in self.bmireader:
-            print(', '.join(row))
+        return csv.reader(self.csvfile, delimiter = ' ', quotechar= '|')
         #testcase, see if multiple rows load. Success
 
 
@@ -120,6 +134,8 @@ class Controller(FileReader, DataChecker):
         for item in range (0,6):
             print(self.myModel.findInputChecker(typeCheckerList[item][0]).__str__())
         """
+    def shelveObjects(self):
+        self.myModel.shelveObjects()
 
 
     def check(self):
@@ -134,10 +150,10 @@ class Controller(FileReader, DataChecker):
         #uses input checkers to determine the right data set
         #
         wrongLines = 0
-
         filename = sys.argv[1]
-        csvfile = open(filename, newline='')
-        bmireader = csv.reader(csvfile, delimiter = ' ', quotechar= '|')
+        if filename == None:
+            filename = self.myViews[0].takeInput("Enter a valid filename:")
+        bmireader = self.openFile(filename)
 
         try:
             for row in bmireader:
@@ -150,7 +166,6 @@ class Controller(FileReader, DataChecker):
             #case of wronglines of code
             if (wrongLines > 0):
                 print("We found " + str(wrongLines) + " row of wrong data")
-            csvfile.close()
         except MyError:
             print("Incorrect Input Length")
             """
@@ -205,6 +220,15 @@ class Model(object):
         self.allMyData = []
         self.allMyInputCheckers = []
 
+    def shelveObjects(self):
+        # shelving Objects has a nice pattern to it as from doing previous ones, identification
+        # of objects by their ID
+        import shelve
+        db = shelve.open('db.shelf', 'c')
+        for item in self.allMyData:
+            db[item.getID()] = item
+        db.close()
+
     def addRegExp(self, id, constraint, description):
         newIC = RegExp(id, constraint, description)
         self.allMyInputCheckers.append(newIC)
@@ -246,6 +270,13 @@ class Data(object):
         self.sales = Sales
         self.BMI = BMI
         self.income = Income
+        self.__pickleObject()
+    def __pickleObject(self):
+        import pickle
+        with open('data2', 'ab') as f:
+            pickle.dump(self, f)
+    def getID(self):
+        return self.id
 
     def __str__(self):
         return self.id + ", " + self.gender + ", " +  self.age + ", " + self.sales + ", " + self.BMI + ", " + self.income
@@ -293,5 +324,6 @@ if (__name__ == '__main__'):
     controller.makeCheckers()
     controller.check()
     doctest.testmod()
+    controller.shelveObjects()
     console = Console()
     console.cmdloop()
