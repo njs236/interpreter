@@ -13,19 +13,47 @@ import unittest
 class MainTest(unittest.TestCase):
 
     def setUp(self):
-        pass
+        model = Model()
+        views = [ConsoleView("Console"), PieView("Pie"), ChartView("Chart")]
+        self.myController = Controller(model, views)
+        self.myController.makeCheckers()
 
     def tearDown(self):
         pass
 
     def test01(self):
+        #There should be 6 checkers
+        actual = self.myController.myModel.countIC()
+        expected = 6
+
+        #the assert
+        self.assertEqual(actual,expected, "There are 6 Input Checkers")
         pass
 
     def test02(self):
-        pass
+        #Check to find an input checker and its constraint
+        firstchecker = self.myController.myModel.findInputChecker('ID')
+        expectedconstraint ="[A-Z][0-9]{3}"
+
+        #assert
+        self.assertTrue(firstchecker.getConstraint() == expectedconstraint, "The id checker should have constraint [A-Z][0-9]{3}")
+
 
     def test03(self):
-        pass
+        #check filename Input and console input
+        filename = 'E:\PycharmProjects\interpreter\data.csv'
+        actual = self.myController.check(filename)
+        expected = self.myController.myModel.findData('A001')
+
+        #assert
+
+        self.assertIsNotNone(expected, "handles filename input")
+
+    def test04(self):
+        #give some invalid input expected a message
+        filename = "E:\PycharmProjects\interpreter\data2.csv"
+        actual = self.myController.check(filename)
+
 
 class FileReader(metaclass=abc.ABCMeta):
     def openFile(self, filename):
@@ -163,9 +191,13 @@ class Controller(FileReader, DataChecker):
         return None
 
     def openFile(self, filename):
+        try:
+
         #testcase, if data is loaded it will print the data in lines. Success
-        csvfile = open(filename, newline='')
-        return csv.reader(csvfile, delimiter = ' ', quotechar= '|')
+            csvfile = open(filename, newline='')
+            return csv.reader(csvfile, delimiter = ' ', quotechar= '|')
+        except OSError:
+            print("Invalid Filename")
         #testcase, see if multiple rows load. Success
 
 
@@ -204,19 +236,15 @@ class Controller(FileReader, DataChecker):
         self.myModel.shelveObjects()
 
 
-    def check(self):
-        """
-        >>> print(self.myModel.findData('A001'))
-        A001, Male, 36, 455, Normal, 889
-        :param id:
-        :return:
-        """
+    def check(self, filename):
         #needs bmireader data.
         #sets up a count of how many wrong lines there are
         #uses input checkers to determine the right data set
         #
         wrongLines = 0
-        filename = self.myViews[0].readLine("Enter a valid filename:")
+        if filename == None:
+            filename = self.myViews[0].readLine("Enter a valid filename:")
+
         bmireader = self.openFile(filename)
 
         try:
@@ -230,14 +258,12 @@ class Controller(FileReader, DataChecker):
             #case of wronglines of code
             if (wrongLines > 0):
                 print("We found " + str(wrongLines) + " row of wrong data")
-        except MyError:
+        except IndexError:
             print("Incorrect Input Length")
 
 
 
     def readLine(self,line):
-        if (line[5] == None):
-            raise(MyError("here is my error"))
         headings = [self.DataColumns['0'],
                     self.DataColumns['1'],
                     self.DataColumns['2'],
@@ -395,10 +421,10 @@ class Model(object):
         return None
 
     def countIC(self):
-        print(len(self.allMyInputCheckers))
+        return len(self.allMyInputCheckers)
 
     def countData(self):
-        print(len(self.allMyData))
+        return len(self.allMyData)
 
     def getAllMyCheckers(self):
         return self.allMyInputCheckers
@@ -445,6 +471,8 @@ class InputChecker(object):
 
     def isValid(self, data):
         return True
+    def getConstraint(self):
+        return self.constraint
 
     def __str__(self):
         return str(self.id) + " is a " + self.description + " with a " + self.constraint + " constraint"
@@ -471,13 +499,16 @@ class Enum(InputChecker):
             return False
 
 if (__name__ == '__main__'):
-    import doctest
     model = Model()
     views = [ConsoleView("Console"), PieView("Pie"), ChartView("Chart")]
+    try:
+        filename = sys.argv[1]
+    except IndexError:
+        filename = None
     controller = Controller(model, views)
     controller.makeCheckers()
-    controller.check()
-    doctest.testmod()
+    controller.check(filename)
+    #unittest.main(verbosity=2)
     controller.shelveObjects()
     console = Console(views[0])
     console.cmdloop()
