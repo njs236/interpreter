@@ -22,6 +22,13 @@ class MainTest(unittest.TestCase):
     def tearDown(self):
         pass
 
+    """
+
+    FUNCTIONAL TESTING
+
+
+    """
+
     def test01(self):
         # There should be 6 checkers
         actual = self.myController.myModel.countIC()
@@ -54,6 +61,45 @@ class MainTest(unittest.TestCase):
         # give some invalid input expected a message
         filename = "E:\PycharmProjects\interpreter\data2.csv"
         actual = self.myController.check(filename)
+
+    def testAgeFunction(self):
+        """
+        expects to return a set of data for viewing in plotly
+        :return:
+        """
+        age = self.myModel.getAgeData()
+        actual = self.myController.displayAgeGraph()
+        expected = {'x': ['0-10', '11-20', '21-30', '31-40', '41-50', '50+'],
+                'y': age,
+                'title': 'BMI Age by bracket'}
+        #assert
+        self.assertEqual(actual, expected, "Functional Testing: Testing Age Function")
+
+
+    def FindViewByIdFunction(self):
+        """
+
+        Expects to return a view
+
+        :return:
+        """
+        actual = self.myController.findViewById("Chart")
+        expected = type(actual) is ChartView
+
+        #assert
+        self.asserTrue(expected, "Functional Testing: returns a proper type of View")
+
+    def makeCheckersFunction(self):
+
+        """
+
+
+        i come up with a valid exception to the main flow, which is that make checkers would add a set of new checkers if ran twice,
+        this would make it have 12 checkers and each have 2 duplicate names. To change this, you could 
+        :return:
+        """
+
+
 
 
 class FileReader(metaclass=abc.ABCMeta):
@@ -211,6 +257,7 @@ class Controller(FileReader, DataChecker):
         plotly = self.findViewById('Chart')
         plotly.printLine("age")
         plotly.display(data)
+        return data
 
     def displayBMIGraph(self):
         plotly = self.findViewById('Plotly')
@@ -289,6 +336,8 @@ class Controller(FileReader, DataChecker):
         for item in range (0,6):
             print(self.myModel.findInputChecker(typeCheckerList[item][0]).__str__())
         """
+
+        return self.myModel.findInputChecker("ID").__str__()
 
     def shelveObjects(self):
         self.myModel.shelveObjects()
