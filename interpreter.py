@@ -169,6 +169,108 @@ class MainTest(unittest.TestCase):
 
         self.assertEqual(actual, args, "Functional Testing: Chart Display Function")
 
+    def GetAgeDataFunction(self):
+        """
+
+
+        Expects to get a list of Age data.
+        :return:
+        """
+        list = [0,0,0,0,0,0]
+        actual =  self.myController.getModel().getAgeData()
+
+        #assert
+
+        self.assertEqual(list, actual, "Functional Testing: getAgeData")
+
+    def AddRegExpFunction(self):
+        """
+
+
+        Expects to add a RegExp function to Model
+        :return:
+        """
+        myModel = self.myController.getModel()
+        allIC = myModel.getAllMyCheckers()
+
+        actual = myModel.addRegExp(0, '[0-9]{3}', "TaxCode")
+        expected = allIC[0]
+
+        #assert
+
+        self.assertEqual(actual, expected, "Functional Testing: Add RegExp")
+
+
+    def AddEnumFunction(self):
+        """
+
+
+        Expects to add a Enum function to Model
+        :return:
+        """
+        myModel = self.myController.getModel()
+        allIC = myModel.getAllMyCheckers()
+
+        actual = myModel.addEnum(0, {'0': 'IT', '1': 'Economics', '2': 'Accounting','3': 'Teaching','4': 'Cleaning'}, "JobDescription")
+        expected = allIC[0]
+
+        #assert
+
+        self.assertEqual(actual, expected, "Functional Testing: Add Enum")
+
+    def AddDataFunction(self):
+        """
+
+
+        Expects to add Data function to Model
+        :return:
+        """
+        myModel = self.myController.getModel()
+        allData = myModel.getAllMyData()
+
+        actual = myModel.addData('A001', 'Male', 355, 455, 'Normal', 677)
+        expected = allData[0]
+
+        #assert
+
+        self.assertEqual(actual, expected, "Functional Testing: Add Data")
+
+    def FindICFunction(self):
+        """
+
+
+        Expects to add a Enum function to Model
+        :return:
+        """
+        myModel = self.myController.getModel()
+        allIC = myModel.getAllMyCheckers()
+
+        myModel.addEnum(0, {'0': 'IT', '1': 'Economics', '2': 'Accountant','3': 'Teacher','4': 'Cleaner'}, "JobDescription")
+        actual = myModel.findInputChecker('JobDescription')
+        expected = allIC[0]
+
+        #assert
+
+        self.assertEqual(actual, expected, "Functional Testing: Find Input Checker")
+
+    def FindDataFunction(self):
+        """
+
+
+        Expects to find a created set of Data
+        :return:
+        """
+        myModel = self.myController.getModel()
+        allData = myModel.getAllMyData()
+
+        myModel.addData('A001', 'Male', 355, 455, 'Normal', 677)
+        actual = myModel.findData('A001')
+        expected = allData[0]
+
+        #assert
+
+        self.assertEqual(actual, expected, "Functional Testing: Find Data")
+
 
 
 
@@ -305,6 +407,9 @@ class Controller(FileReader, DataChecker):
 
 
     """
+
+    def getModel(self):
+        return self.myModel
 
     def displayAgeGraph(self):
         """
@@ -621,6 +726,9 @@ class Model(object):
 
     def getAllMyCheckers(self):
         return self.allMyInputCheckers
+
+    def getAllMyData(self):
+        return self.allMyData
 
     def addData(self, ID, Gender, Age, Sales, BMI, Income):
         newData = Data(ID, Gender, Age, Sales, BMI, Income)
