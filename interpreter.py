@@ -87,17 +87,87 @@ class MainTest(unittest.TestCase):
         expected = type(actual) is ChartView
 
         #assert
-        self.asserTrue(expected, "Functional Testing: returns a proper type of View")
+        self.assertTrue(expected, "Functional Testing: returns a proper type of View")
 
     def makeCheckersFunction(self):
 
         """
-
+        Expects to return a checker after the make Checkers is run.
 
         i come up with a valid exception to the main flow, which is that make checkers would add a set of new checkers if ran twice,
-        this would make it have 12 checkers and each have 2 duplicate names. To change this, you could 
+        this would make it have 12 checkers and each have 2 duplicate names. To change this, you could set up a check based on the ID of a
+        checker. As it is, this would make the whole thing fail
         :return:
         """
+        pass
+
+    def shelveObjectsFunction(self):
+        """
+
+        Expects to return a Data object
+        :return:
+        """
+        self.myController.check()
+        actual = self.myController.shelveObjects()
+        expected = type(actual) is Data
+
+        #assert
+
+        self.assertTrue(expected, "Functional Testing: returns a Data object")
+
+    def LineCheckFunction(self):
+        """
+
+
+        Expects to pass test
+        :return:
+        """
+
+        actual = self.myController.readLine(['A001','Male',36,455,'Normal',889])
+
+        #assert
+
+        self.assertFalse(actual, "Functional Testing: Line Check")
+
+    def PieViewDisplayFunction(self):
+        """
+
+
+        Expects to return success of drawing Pie with Plotly
+
+        :return:
+        """
+
+        args = {'labels': ['Male', 'Female'],
+                         'values': [33, 45],
+                         'pie': 'pie',
+               'title': 'Gender Pie Graph'}
+
+        view = self.myController.findViewById('Pie')
+        actual = view.display(args)
+
+        #assert
+
+        self.assertEqual(actual, args, "Functional Testing: Pie Display Function")
+
+    def ChartViewDisplayFunction(self):
+        """
+
+
+        Expects to return success of drawing Chart with plotly
+        :return:
+        """
+
+        args = {'x': ['0-10', '11-20', '21-30', '31-40', '41-50', '51+'],
+                         'y': [0, 0, 2, 2, 0, 0],
+               'title': 'Age Chart Graph'}
+
+        view = self.myController.findViewById('Chart')
+        actual = view.display(args)
+
+        #assert
+
+        self.assertEqual(actual, args, "Functional Testing: Chart Display Function")
 
 
 
@@ -340,7 +410,7 @@ class Controller(FileReader, DataChecker):
         return self.myModel.findInputChecker("ID").__str__()
 
     def shelveObjects(self):
-        self.myModel.shelveObjects()
+        return self.myModel.shelveObjects()
 
     def check(self, filename):
         # needs bmireader data.
@@ -432,6 +502,8 @@ class PieView(IView):
 
         plotly.offline.plot(fig)
 
+        return args
+
 
 class ChartView(IView):
     def __init__(self, id):
@@ -461,6 +533,7 @@ class ChartView(IView):
         layout = go.Layout(title=args['title'])
         fig = go.Figure(data=data, layout=layout)
         py.offline.plot(fig)
+        return args
 
 
 class ConsoleView(IView):
@@ -492,10 +565,11 @@ class Model(object):
         of objects by their ID
         """
         import shelve
-        db = shelve.open('db.shelf', 'c')
+        db = shelve.open('db.shelf')
         for item in self.allMyData:
-            db[item.getID()] = item
+            db[(item.getID())] = item
         db.close()
+        return self.allMyData[0]
 
     def getAgeData(self):
         """
@@ -585,6 +659,10 @@ class Data(object):
 
     def getIncome(self):
         return self.income
+
+    def getKey(self):
+        return "'" + self.id + "'"
+
 
     def __str__(self):
         return self.id + ", " + self.gender + ", " \
