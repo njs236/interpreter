@@ -46,12 +46,12 @@ class MainTest(unittest.TestCase):
         # assert
         self.assertTrue(firstchecker.getConstraint() == expectedconstraint,
                         "The id checker should have constraint [A-Z][0-9]{3}")
-
+    """
     def test03(self):
         # check filename Input and console input
         filename = 'E:\PycharmProjects\interpreter\data.csv'
         actual = self.myController.check(filename)
-        expected = self.myController.myModel.findData('A001')
+        expected = self.myController.getModel().findData('A001')
 
         # assert
 
@@ -61,13 +61,14 @@ class MainTest(unittest.TestCase):
         # give some invalid input expected a message
         filename = "E:\PycharmProjects\interpreter\data2.csv"
         actual = self.myController.check(filename)
-
+        pass
+    """
     def testAgeFunction(self):
         """
         expects to return a set of data for viewing in plotly
         :return:
         """
-        age = self.myModel.getAgeData()
+        age = self.myController.getModel().getAgeData()
         actual = self.myController.displayAgeGraph()
         expected = {'x': ['0-10', '11-20', '21-30', '31-40', '41-50', '50+'],
                 'y': age,
@@ -76,7 +77,7 @@ class MainTest(unittest.TestCase):
         self.assertEqual(actual, expected, "Functional Testing: Testing Age Function")
 
 
-    def FindViewByIdFunction(self):
+    def testFindViewByIdFunction(self):
         """
 
         Expects to return a view
@@ -89,7 +90,7 @@ class MainTest(unittest.TestCase):
         #assert
         self.assertTrue(expected, "Functional Testing: returns a proper type of View")
 
-    def makeCheckersFunction(self):
+    def testmakeCheckersFunction(self):
 
         """
         Expects to return a checker after the make Checkers is run.
@@ -100,13 +101,14 @@ class MainTest(unittest.TestCase):
         :return:
         """
         pass
-
-    def shelveObjectsFunction(self):
         """
+    def testshelveObjectsFunction(self):
+
 
         Expects to return a Data object
         :return:
-        """
+
+        pass
         self.myController.check()
         actual = self.myController.shelveObjects()
         expected = type(actual) is Data
@@ -114,8 +116,8 @@ class MainTest(unittest.TestCase):
         #assert
 
         self.assertTrue(expected, "Functional Testing: returns a Data object")
-
-    def LineCheckFunction(self):
+        """
+    def testLineCheckFunction(self):
         """
 
 
@@ -123,13 +125,13 @@ class MainTest(unittest.TestCase):
         :return:
         """
 
-        actual = self.myController.readLine(['A001','Male',36,455,'Normal',889])
+        actual = self.myController.readLine(['A001','Male','36','455','Normal','889'])
 
         #assert
 
         self.assertFalse(actual, "Functional Testing: Line Check")
 
-    def PieViewDisplayFunction(self):
+    def testPieViewDisplayFunction(self):
         """
 
 
@@ -150,7 +152,7 @@ class MainTest(unittest.TestCase):
 
         self.assertEqual(actual, args, "Functional Testing: Pie Display Function")
 
-    def ChartViewDisplayFunction(self):
+    def testChartViewDisplayFunction(self):
         """
 
 
@@ -169,7 +171,7 @@ class MainTest(unittest.TestCase):
 
         self.assertEqual(actual, args, "Functional Testing: Chart Display Function")
 
-    def GetAgeDataFunction(self):
+    def testGetAgeDataFunction(self):
         """
 
 
@@ -183,7 +185,7 @@ class MainTest(unittest.TestCase):
 
         self.assertEqual(list, actual, "Functional Testing: getAgeData")
 
-    def AddRegExpFunction(self):
+    def testAddRegExpFunction(self):
         """
 
 
@@ -191,17 +193,18 @@ class MainTest(unittest.TestCase):
         :return:
         """
         myModel = self.myController.getModel()
-        allIC = myModel.getAllMyCheckers()
+
 
         actual = myModel.addRegExp(0, '[0-9]{3}', "TaxCode")
-        expected = allIC[0]
+        allIC = myModel.getAllMyCheckers()
+        expected = allIC[6]
 
         #assert
 
         self.assertEqual(actual, expected, "Functional Testing: Add RegExp")
 
 
-    def AddEnumFunction(self):
+    def testAddEnumFunction(self):
         """
 
 
@@ -209,16 +212,17 @@ class MainTest(unittest.TestCase):
         :return:
         """
         myModel = self.myController.getModel()
-        allIC = myModel.getAllMyCheckers()
+
 
         actual = myModel.addEnum(0, {'0': 'IT', '1': 'Economics', '2': 'Accounting','3': 'Teaching','4': 'Cleaning'}, "JobDescription")
-        expected = allIC[0]
+        allIC = myModel.getAllMyCheckers()
+        expected = allIC[6]
 
         #assert
 
         self.assertEqual(actual, expected, "Functional Testing: Add Enum")
 
-    def AddDataFunction(self):
+    def testAddDataFunction(self):
         """
 
 
@@ -226,16 +230,16 @@ class MainTest(unittest.TestCase):
         :return:
         """
         myModel = self.myController.getModel()
-        allData = myModel.getAllMyData()
 
         actual = myModel.addData('A001', 'Male', 355, 455, 'Normal', 677)
+        allData = myModel.getAllMyData()
         expected = allData[0]
 
         #assert
 
         self.assertEqual(actual, expected, "Functional Testing: Add Data")
 
-    def FindICFunction(self):
+    def testFindICFunction(self):
         """
 
 
@@ -243,17 +247,18 @@ class MainTest(unittest.TestCase):
         :return:
         """
         myModel = self.myController.getModel()
-        allIC = myModel.getAllMyCheckers()
+
 
         myModel.addEnum(0, {'0': 'IT', '1': 'Economics', '2': 'Accountant','3': 'Teacher','4': 'Cleaner'}, "JobDescription")
         actual = myModel.findInputChecker('JobDescription')
-        expected = allIC[0]
+        allIC = myModel.getAllMyCheckers()
+        expected = allIC[6]
 
         #assert
 
         self.assertEqual(actual, expected, "Functional Testing: Find Input Checker")
 
-    def FindDataFunction(self):
+    def testFindDataFunction(self):
         """
 
 
@@ -517,7 +522,7 @@ class Controller(FileReader, DataChecker):
     def shelveObjects(self):
         return self.myModel.shelveObjects()
 
-    def check(self, filename):
+    def check(self, filename=None):
         # needs bmireader data.
         # sets up a count of how many wrong lines there are
         # uses input checkers to determine the right data set
@@ -701,10 +706,12 @@ class Model(object):
     def addRegExp(self, id, constraint, description):
         newIC = RegExp(id, constraint, description)
         self.allMyInputCheckers.append(newIC)
+        return newIC
 
     def addEnum(self, id, constraint, description):
         newIC = Enum(id, constraint, description)
         self.allMyInputCheckers.append(newIC)
+        return newIC
 
     def findInputChecker(self, desc):
         for i in self.allMyInputCheckers:
@@ -733,6 +740,7 @@ class Model(object):
     def addData(self, ID, Gender, Age, Sales, BMI, Income):
         newData = Data(ID, Gender, Age, Sales, BMI, Income)
         self.allMyData.append(newData)
+        return newData
 
 
 class Data(object):
