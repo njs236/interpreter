@@ -5,6 +5,7 @@ import abc
 import csv
 import sys
 import unittest
+import tkinter
 
 """
 The interfaces for Controller are to make it easier for me to follow the
@@ -130,11 +131,6 @@ class Controller(FileReader, DataChecker):
     """
 
     def __init__(self, myModel, myViews):
-        self.Gender = {"0": "Male", "1": "Female"}
-        self.BMI = {"0": "Normal", "1": "Overweight",
-                    "2": "Obesity", "3": "Underweight"}
-        self.DataColumns = {"0": "ID", "1": "Gender", "2": "Age",
-                            "3": "Sales", "4": "BMI", "5": "Income"}
         self.myModel = myModel
         self.myViews = myViews
         self.bmireader = ""
@@ -151,23 +147,7 @@ class Controller(FileReader, DataChecker):
         return self.myModel
 
     def displayAgeGraph(self):
-        """
-
-         Age Graph is a bar chart that displays age by range
-         0-10,
-         11-20,
-         21-30,
-         31-40,
-         41-50,
-         50+
-
-        :return:
-        """
-        age = self.myModel.getAgeData()
-        data = {'x': ['0-10', '11-20', '21-30', '31-40', '41-50', '50+'],
-                'y': age,
-                'title': 'BMI Age by bracket'}
-
+        data = self.myModel.getAgeData()
         plotly = self.findViewById('Chart')
         plotly.printLine("age")
         plotly.display(data)
@@ -216,35 +196,7 @@ class Controller(FileReader, DataChecker):
             # testcase, see if multiple rows load. Success
 
     def makeCheckers(self):
-        """
-        I have to make a design decision whether the data belongs
-        in controller or made solely in Model
-        Is there a reason that controller would determine the
-        checkers that are made
-        i have 6 inputs i want to check.
-         ID, RegExp
-         Gender, Gender
-         Age, RegExp
-         Sales, RegExp
-         BMI, BMI
-         Income, RegExp
-
-        """
-        typeCheckerList = [[self.DataColumns['0'], "RegExp", "[A-Z][0-9]{3}"],
-                           [self.DataColumns['1'], "Gender"],
-                           [self.DataColumns['2'], "RegExp", "[0-9]{2}"],
-                           [self.DataColumns['3'], "RegExp", "[0-9]{3}"],
-                           [self.DataColumns['4'], "BMI"],
-                           [self.DataColumns['5'], "RegExp", "[0-9]{2,3}"]]
-
-        for i in range(0, 6):
-            if (typeCheckerList[i][1] == "RegExp"):
-                self.myModel.addRegExp(i, typeCheckerList[i][2],
-                                       typeCheckerList[i][0])
-            else:
-                self.myModel.addEnum(i, typeCheckerList[i][1],
-                                     typeCheckerList[i][0])
-
+        self.myModel.makeCheckers()
         """
         self.myModel.countIC()
         for item in range (0,6):
@@ -399,6 +351,11 @@ class ConsoleView(IView):
 
 class Model(object):
     def __init__(self):
+        self.Gender = {"0": "Male", "1": "Female"}
+        self.BMI = {"0": "Normal", "1": "Overweight",
+                    "2": "Obesity", "3": "Underweight"}
+        self.DataColumns = {"0": "ID", "1": "Gender", "2": "Age",
+                            "3": "Sales", "4": "BMI", "5": "Income"}
         self.allMyData = []
         self.allMyInputCheckers = []
 
@@ -415,10 +372,49 @@ class Model(object):
         db.close()
         return self.allMyData[0]
 
+    def makeCheckers(self):
+        """
+        I have to make a design decision whether the data belongs
+        in controller or made solely in Model
+        Is there a reason that controller would determine the
+        checkers that are made
+        i have 6 inputs i want to check.
+         ID, RegExp
+         Gender, Gender
+         Age, RegExp
+         Sales, RegExp
+         BMI, BMI
+         Income, RegExp
+
+        """
+        typeCheckerList = [[self.DataColumns['0'], "RegExp", "[A-Z][0-9]{3}"],
+                           [self.DataColumns['1'], "Gender"],
+                           [self.DataColumns['2'], "RegExp", "[0-9]{2}"],
+                           [self.DataColumns['3'], "RegExp", "[0-9]{3}"],
+                           [self.DataColumns['4'], "BMI"],
+                           [self.DataColumns['5'], "RegExp", "[0-9]{2,3}"]]
+
+        for i in range(0, 6):
+            if (typeCheckerList[i][1] == "RegExp"):
+                self.addRegExp(i, typeCheckerList[i][2],
+                                       typeCheckerList[i][0])
+            else:
+                self.addEnum(i, typeCheckerList[i][1],
+                                     typeCheckerList[i][0])
+
+
     def getAgeData(self):
         """
-        I need all data on age
-        :return: age in brackets
+
+         Age Graph is a bar chart that displays age by range
+         0-10,
+         11-20,
+         21-30,
+         31-40,
+         41-50,
+         50+
+
+        :return:
         """
         list = [0, 0, 0, 0, 0, 0]
         for item in self.allMyData:
@@ -434,8 +430,12 @@ class Model(object):
                 list[4] += 1
             else:
                 list[5] += 1
+        data = {'x': ['0-10', '11-20', '21-30', '31-40', '41-50', '50+'],
+                'y': list,
+                'title': 'BMI Age by bracket'}
 
-        return list
+        return data
+
 
     def addRegExp(self, id, constraint, description):
         newIC = RegExp(id, constraint, description)

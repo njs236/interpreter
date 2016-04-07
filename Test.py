@@ -57,11 +57,8 @@ class MainTest(unittest.TestCase):
         expects to return a set of data for viewing in plotly
         :return:
         """
-        age = self.myController.getModel().getAgeData()
         actual = self.myController.displayAgeGraph()
-        expected = {'x': ['0-10', '11-20', '21-30', '31-40', '41-50', '50+'],
-                'y': age,
-                'title': 'BMI Age by bracket'}
+        expected = self.myController.getModel().getAgeData()
         #assert
         self.assertEqual(actual, expected, "Functional Testing: Testing Age Function")
 
