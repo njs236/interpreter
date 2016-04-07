@@ -127,7 +127,9 @@ class Console(cmd.Cmd):
 class Controller(FileReader, DataChecker):
     """
     instancing the model and views in this way is a design decision, the views
-    should be initialised when the program is started
+    should be initialised when the program is started.
+
+
     """
 
     def __init__(self, myModel, myViews):
@@ -196,14 +198,7 @@ class Controller(FileReader, DataChecker):
             # testcase, see if multiple rows load. Success
 
     def makeCheckers(self):
-        self.myModel.makeCheckers()
-        """
-        self.myModel.countIC()
-        for item in range (0,6):
-            print(self.myModel.findInputChecker(typeCheckerList[item][0]).__str__())
-        """
-
-        return self.myModel.findInputChecker("ID").__str__()
+        return self.myModel.makeCheckers()
 
     def shelveObjects(self):
         return self.myModel.shelveObjects()
@@ -388,19 +383,25 @@ class Model(object):
 
         """
         typeCheckerList = [[self.DataColumns['0'], "RegExp", "[A-Z][0-9]{3}"],
-                           [self.DataColumns['1'], "Gender"],
+                           [self.DataColumns['1'], self.Gender],
                            [self.DataColumns['2'], "RegExp", "[0-9]{2}"],
                            [self.DataColumns['3'], "RegExp", "[0-9]{3}"],
-                           [self.DataColumns['4'], "BMI"],
+                           [self.DataColumns['4'], self.BMI],
                            [self.DataColumns['5'], "RegExp", "[0-9]{2,3}"]]
 
         for i in range(0, 6):
+            #condition: checker already exists
+            if self.findInputChecker(typeCheckerList[i][0]):
+                pass
+
             if (typeCheckerList[i][1] == "RegExp"):
                 self.addRegExp(i, typeCheckerList[i][2],
                                        typeCheckerList[i][0])
             else:
                 self.addEnum(i, typeCheckerList[i][1],
                                      typeCheckerList[i][0])
+
+        return self.findInputChecker("ID").__str__()
 
 
     def getAgeData(self):
@@ -543,23 +544,11 @@ class RegExp(InputChecker):
 
 
 class Enum(InputChecker):
-    __Gender = {"0": "Male", "1": "Female"}
-    __BMI = {"0": "Normal", "1": "Overweight",
-             "2": "Obesity", "3": "Underweight"}
-
     def isValid(self, data):
-        if (self.constraint == "BMI"):
-            for key in self._Enum__BMI:
-                if (data == self._Enum__BMI[key]):
+            for key in self.constraint:
+                if (data == self.constraint[key]):
                     return True
             return False
-
-        elif (self.constraint == "Gender"):
-            for key in self._Enum__Gender:
-                if (data == self._Enum__Gender[key]):
-                    return True
-            return False
-
 
 if (__name__ == '__main__'):
     model = Model()

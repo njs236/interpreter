@@ -80,13 +80,14 @@ class MainTest(unittest.TestCase):
 
         """
         Expects to return a checker after the make Checkers is run.
-
-        i come up with a valid exception to the main flow, which is that make checkers would add a set of new checkers if ran twice,
-        this would make it have 12 checkers and each have 2 duplicate names. To change this, you could set up a check based on the ID of a
-        checker. As it is, this would make the whole thing fail
         :return:
         """
-        pass
+        expected = "0 is a ID with a [A-Z][0-9]{3} constraint"
+        actual = self.myController.makeCheckers()
+
+        #assert
+
+        self.assertEqual(expected, actual, "Functional Testing: Make Checkers")
 
     def testshelveObjectsFunction(self):
         """
