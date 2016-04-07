@@ -123,6 +123,17 @@ class Console(cmd.Cmd):
         """
         self.myView.getController().displayBMISalesGraph()
 
+    def do_loadfile(self, args):
+        """
+        Load File and check contents
+        :param args:
+        :return:
+        """
+        try:
+            self.myView.getController().check(args[0])
+        except IndexError:
+            self.myView.getController().check()
+
 
 class Controller(FileReader, DataChecker):
     """
@@ -185,68 +196,31 @@ class Controller(FileReader, DataChecker):
                 return item
         return None
 
-    def openFile(self, filename):
-        try:
-            """
-            testcase, if data is loaded it will print the
-            data in lines. Success
-            """
-            csvfile = open(filename, newline='')
-            return csv.reader(csvfile, delimiter=' ', quotechar='|')
-        except OSError:
-            print("Invalid Filename")
-            # testcase, see if multiple rows load. Success
-
     def makeCheckers(self):
         return self.myModel.makeCheckers()
 
     def shelveObjects(self):
         return self.myModel.shelveObjects()
 
+    def openFile(self, filename=None):
+        if filename is None:
+            filename = self.myViews[0].readLine("Enter a valid filename:")
+        #clause for invalid filename in input
+        bmireader = self.myModel.openFile(filename)
+        if bmireader is None :
+            self.myViews[0].printLine("Invalid Filename")
+            self.openFile()
+        return bmireader
+
     def check(self, filename=None):
         # needs bmireader data.
         # sets up a count of how many wrong lines there are
         # uses input checkers to determine the right data set
         #
-
-        wrongLines = 0
-        if filename is None:
-            filename = self.myViews[0].readLine("Enter a valid filename:")
-
-        bmireader = self.openFile(filename)
-
-        try:
-            for row in bmireader:
-                wrong = self.readLine(row)
-                if (not wrong):
-                    self.myModel.addData(ID=row[0], Gender=row[1],
-                                         Age=row[2], Sales=row[3],
-                                         BMI=row[4], Income=row[5])
-
-                elif (wrong):
-                    wrongLines += 1
-            # case of wronglines of code
-            if (wrongLines > 0):
-                print("We found " + str(wrongLines) + " row of wrong data")
-        except IndexError:
-            print("Incorrect Input Length")
-
-    def readLine(self, line):
-        headings = [self.DataColumns['0'],
-                    self.DataColumns['1'],
-                    self.DataColumns['2'],
-                    self.DataColumns['3'],
-                    self.DataColumns['4'],
-                    self.DataColumns['5'],
-                    ]
-        for item in range(0, 5):
-            if self.myModel.findInputChecker(headings[item]):
-                IC = self.myModel.findInputChecker(headings[item])
-                if (IC.isValid(line[item])):
-                    pass
-                else:
-                    return True
-        return False
+        wrongLines = self.myModel.check(self.openFile(filename))
+        # case of wronglines of code
+        if (wrongLines > 0):
+            print("We found " + str(wrongLines) + " row of wrong data")
 
 
 class IView(metaclass=abc.ABCMeta):
@@ -260,6 +234,9 @@ class IView(metaclass=abc.ABCMeta):
         pass
 
     def getController(self):
+        pass
+
+    def printLine(self):
         pass
 
 
@@ -337,6 +314,9 @@ class ConsoleView(IView):
     def readLine(self, string):
         return input(string)
 
+    def printLine(self, line):
+        print(line)
+
     def setController(self, controller):
         self.myController = controller
 
@@ -353,6 +333,55 @@ class Model(object):
                             "3": "Sales", "4": "BMI", "5": "Income"}
         self.allMyData = []
         self.allMyInputCheckers = []
+
+    def check(self, reader):
+        wrongLines = 0
+        try:
+            for row in reader:
+                wrong = self.readLine(row)
+                if (not wrong):
+                    self.addData(ID=row[0], Gender=row[1],
+                            Age=row[2], Sales=row[3],
+                            BMI=row[4], Income=row[5])
+
+                elif (wrong):
+                    wrongLines += 1
+        except IndexError:
+            print("Incorrect Input Length")
+        return wrongLines
+
+    def emptyData(self):
+        self.allMyData = []
+
+    def openFile(self, filename):
+        self.emptyData()
+        try:
+            """
+            testcase, if data is loaded it will print the
+            data in lines. Success
+            """
+            csvfile = open(filename, newline='')
+            return csv.reader(csvfile, delimiter=' ', quotechar='|')
+        except OSError:
+            return None
+            # testcase, see if multiple rows load. Success
+
+    def readLine(self, line):
+        headings = [self.DataColumns['0'],
+                    self.DataColumns['1'],
+                    self.DataColumns['2'],
+                    self.DataColumns['3'],
+                    self.DataColumns['4'],
+                    self.DataColumns['5'],
+                    ]
+        for item in range(0, 5):
+            if self.findInputChecker(headings[item]):
+                IC = self.findInputChecker(headings[item])
+                if (IC.isValid(line[item])):
+                    pass
+                else:
+                    return True
+        return False
 
     def shelveObjects(self):
         """

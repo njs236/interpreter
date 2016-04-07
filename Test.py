@@ -112,7 +112,7 @@ class MainTest(unittest.TestCase):
         :return:
         """
 
-        actual = self.myController.readLine(['A001','Male','36','455','Normal','889'])
+        actual = self.myController.getModel().readLine(['A001','Male','36','455','Normal','889'])
 
         #assert
 
